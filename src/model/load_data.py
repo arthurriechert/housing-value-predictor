@@ -14,7 +14,7 @@ def get_training_sets ():
     # Set number of training examples, m, and features, n
     m, n = data.shape[0], 6
 
-    X_train = np.empty((m, n), dtype=np.float32)
+    X_train = np.empty((m, n), dtype=np.float64)
     
     # Refer to README.md for features information
     X_train[:, 0] = data.longitude
@@ -25,6 +25,6 @@ def get_training_sets ():
     X_train[:, 5] = data.median_income
 
     # Output will be house value
-    Y_train = np.array(data.median_house_value, dtype=np.float32)
+    Y_train = np.array(data.median_house_value, dtype=np.float64)
 
     return X_train, Y_train
