@@ -111,12 +111,17 @@ def reverse_normalization(np_array, mean, std_deviation):
 def test_model():
 
     X_unorm, Y_unorm = ld.get_training_sets()
+    X_eval_unorm, Y_eval_unorm = ld.get_evaluation_data(X_unorm.shape[0])
+
 
     X_train, X_mean, X_std = z_score_normalization(X_unorm)
     Y_train, Y_mean, Y_std = z_score_normalization(Y_unorm)
 
+    X_eval,_,_ = z_score_normalization(X_eval_unorm)
+    Y_eval,_,_ = z_score_normalization(Y_eval_unorm)
 
-    print(f"NORMALIZED DATA: {X_train}")
+
+    print(f"NORMALIZED DATA: {X_train}\nX_EVAL_DATA: {X_eval}\nY_EVAL_DATA: {Y_eval}")
 
     # Save computing time by limiting amount of examples
     m_test = int(X_train.shape[0] / 100)
@@ -182,7 +187,10 @@ def test_model():
 
             continue
 
-    print(f'\033[32mOptimized at {W_final, b_final}\033[0m')
+    # Compute cost against evaluation data
+    final_cost = compute_cost(W_final, X_eval, b_final, Y_eval)
+
+    print(f'\033[32mOptimized at {W_final, b_final}\033[0m\nCOST AGAINST EVALUATION DATA:{final_cost}')
 
     while(True):
 
