@@ -11,7 +11,7 @@ def load_data ():
     """
     
     # Read CSV
-    data = pd.read_csv("../../data/housing-data.csv") 
+    data = pd.read_csv("../data/housing-data.csv") 
 
     return data 
 
