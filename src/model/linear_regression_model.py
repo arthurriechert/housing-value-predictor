@@ -1,7 +1,6 @@
 import numpy as np
-import load_data as ld
+import model.load_data as ld
 import os
-
 
 def parameter_init(j):
     """
@@ -239,7 +238,6 @@ def test_model():
 
     # Get training and evaluation data from csv
     X_unorm, Y_unorm = ld.get_training_sets()
-    print(X_unorm, Y_unorm)
     X_eval_unorm, Y_eval_unorm = ld.get_evaluation_data(X_unorm.shape[0])
 
     # Normalize training data
@@ -368,5 +366,3 @@ def test_model():
         # Display the prediction
         print(f"The median home value should be: ${final_prediction}")
 
-# Run test model
-test_model()
