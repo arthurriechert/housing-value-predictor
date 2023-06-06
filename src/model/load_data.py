@@ -28,7 +28,10 @@ def get_training_sets ():
 
     print(f"DATA: \n{X_train}")
 
+    # Save some data for evaluation
+    m_limit = 1e4
+
     # Output will be house value
     Y_train = np.array(data.median_house_value, dtype=np.float32)
 
-    return X_train, Y_train
+    return X_train[m_limit: ], Y_train
