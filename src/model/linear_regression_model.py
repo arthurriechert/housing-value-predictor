@@ -168,13 +168,14 @@ def test_model():
 
             if should_norm == "yes":
                 W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, epochs, alpha)    
-            elif  should_norm == "no":
+            elif should_norm == "no":
                 W_final, b_final = gradient_descent(W_test, X_unorm, b_test, Y_unorm, epochs, alpha)    
  
 
             running = False
 
-        except:
+        except Exception as e:
+            print(f"ERROR: {e}")
             quit_ = input("Would you like to quit? ")
             if quit_ == "yes":
                 break
