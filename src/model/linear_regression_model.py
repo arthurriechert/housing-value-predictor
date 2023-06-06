@@ -83,17 +83,26 @@ def gradient_descent(W, X, b, Y, iters, alpha):
     return W, b
 
 def z_score_normalization(np_array):
-
-    # Compute the mean
-    mean = np.mean(np_array)
-
-    # Compute the standard deviation
-    std_deviation = np.std(np_array)
+   # Check if np_array is 1-D or 2-D
+    if np_array.ndim == 1:
+        # For 1-D array, calculate the mean and standard deviation of the entire array
+        mean = np.nanmean(np_array)
+        std_dev = np.nanstd(np_array)
+        # If np_array contains any NaN values, replace them with the mean
+        np_array = np.where(np.isnan(np_array), mean, np_array)
+    else:
+        # For 2-D array, calculate the mean and standard deviation of each column
+        mean = np.nanmean(np_array, axis=0)
+        std_dev = np.nanstd(np_array, axis=0)
+        # If np_array contains any NaN values, replace them with the mean of their column
+        inds = np.where(np.isnan(np_array))
+        np_array[inds] = np.take(mean, inds[1]) 
+    print(f"MEAN: {mean}\nSTANDARD DEVIATION: {std_dev}")
 
     # Compute normalized values
-    normalized_array = (np_array - mean) / std_deviation
+    normalized_array = (np_array - mean) / std_dev
 
-    return normalized_array, mean, std_deviation
+    return normalized_array, mean, std_dev
 
 def reverse_normalization(np_array, mean, std_deviation):
     return np_array * std_deviation + mean
@@ -105,6 +114,9 @@ def test_model():
 
     X_train, X_mean, X_std = z_score_normalization(X_unorm)
     Y_train, Y_mean, Y_std = z_score_normalization(Y_unorm)
+
+
+    print(f"NORMALIZED DATA: {X_train}")
 
     # Save computing time by limiting amount of examples
     m_test = int(X_train.shape[0] / 100)
@@ -188,9 +200,10 @@ def test_model():
         median_age = float(input("What is the median age of the housing block? "))
         total_rooms = float(input("What is the total number of rooms for this block? "))
         median_income = float(input("What is the median income for this area? "))
+        total_bedrooms = float(input("What is the total number of bedrooms? "))
+        population = float(input("What is the total population? "))
 
-
-        inputs = np.array([long, lat, lat*long,  median_age, total_rooms, median_income])
+        inputs = np.array([long, lat, lat*long,  median_age, total_rooms, median_income, total_bedrooms, population])
 
         normalized_inputs, std, mean = z_score_normalization(inputs)
 
