@@ -1,5 +1,8 @@
 import numpy as np
 import load_data as ld
+import os
+
+# Initialize Random Weights
 
 # Basic dot product to get model results
 def compute_model(W, X, b):
@@ -49,7 +52,7 @@ def compute_gradient(W, X, b, Y):
             grad_W[j] += loss * X[i, j]
 
     grad_W /= m
-    grad_b /= n 
+    grad_b /= m 
 
 
     return grad_W, grad_b
@@ -69,6 +72,9 @@ def gradient_descent(W, X, b, Y, iters, alpha):
         b = b - alpha * db
 
         print(f"{i} -> Cost: {cost} | dW: {dW} | db: {db}")
+    
+    np.save('weights.npy', W)
+    np.save('bias.npy', b)
 
     return W, b
 
@@ -103,12 +109,20 @@ def test_model():
 
     W_test = np.array([-51.83733287,   1.01983882,   2.96451753,   0.79474719])
     b_test = -24.45082487324418
+    
+    if os.path.exists('weights.npy') and os.path.exists('bias.npy'):
+        W_test = np.load('weights.npy')
+        b_test = np.load('bias.npy')
+    else:
+        W_test, b_test = gradient_descent(W_test, X_train, b_test, Y_train, 1000, 1e-4)
+        print(f'Optimized at {W_test, b_test}')
 
     # Compute for test
     test_predictions = compute_model(W_test, X_train[:m_test, :], b_test)
 
     dW, db = compute_gradient(W_test, X_train, b_test, Y_train)
 
+    epochs = int(input("How many epochs? "))
 
     print(f"""
           Computing for {m_test} training sets. 
@@ -131,7 +145,7 @@ def test_model():
           ######### GRADIENT DESCENT #########
           """)
     
-    W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, 1000, 1e-4)
+    W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, epochs, 1e-4)
 
     print(f'\033[32mOptimized at {W_final, b_final}\033[0m')
 
@@ -173,6 +187,4 @@ def test_model():
         What is the total number of rooms for this block? 880.0
         What is the median income for this area? 129.0
         """
-
-
 test_model()
