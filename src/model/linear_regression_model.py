@@ -3,6 +3,10 @@ import load_data as ld
 import os
 
 # Initialize Random Weights
+def parameter_init(n):
+    W = 1e-1  * np.random.rand(n)
+    b = 0
+    return W, b
 
 # Basic dot product to get model results
 def compute_model(W, X, b):
@@ -104,28 +108,26 @@ def test_model():
 
     # Save computing time by limiting amount of examples
     m_test = int(X_train.shape[0] / 100)
+    m, n = X_train.shape
 
     # Initialize a W and b
 
-    W_test = np.array([-51.83733287,   1.01983882,   2.96451753,   0.79474719])
-    b_test = -24.45082487324418
-    
+    W_test, b_test = parameter_init(n)
+
     if os.path.exists('weights.npy') and os.path.exists('bias.npy'):
         W_test = np.load('weights.npy')
         b_test = np.load('bias.npy')
-    else:
-        W_test, b_test = gradient_descent(W_test, X_train, b_test, Y_train, 1000, 1e-4)
-        print(f'Optimized at {W_test, b_test}')
+    # else:
+      #  W_test, b_test = gradient_descent(W_test, X_train, b_test, Y_train, 1000, 1e-4)
+      #  print(f'Optimized at {W_test, b_test}')
 
     # Compute for test
     test_predictions = compute_model(W_test, X_train[:m_test, :], b_test)
 
     dW, db = compute_gradient(W_test, X_train, b_test, Y_train)
 
-    epochs = int(input("How many epochs? "))
-
     print(f"""
-          Computing for {m_test} training sets. 
+         Computing for {m_test} training sets. 
           
           ######### TEST PREDICTIONS #########
           
@@ -144,8 +146,28 @@ def test_model():
           
           ######### GRADIENT DESCENT #########
           """)
-    
-    W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, epochs, 1e-4)
+    running = True
+
+    while(running):
+        try:
+            epochs = int(input("How many epochs? "))
+            alpha = float(input("What's alpha? "))
+            should_norm = input("Use normalized or unnormalized data(yes or no)? ")
+
+            if should_norm == "yes":
+                W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, epochs, alpha)    
+            elif  should_norm == "no":
+                W_final, b_final = gradient_descent(W_test, X_unorm, b_test, Y_unorm, epochs, alpha)    
+ 
+
+            running = False
+
+        except:
+            quit_ = input("Would you like to quit? ")
+            if quit_ == "yes":
+                break
+
+            continue
 
     print(f'\033[32mOptimized at {W_final, b_final}\033[0m')
 
@@ -165,10 +187,10 @@ def test_model():
         long = float(input("What is the longitude? "))
         median_age = float(input("What is the median age of the housing block? "))
         total_rooms = float(input("What is the total number of rooms for this block? "))
-        #  median_income = float(input("What is the median income for this area? "))
+        median_income = float(input("What is the median income for this area? "))
 
 
-        inputs = np.array([long, lat, median_age, total_rooms])
+        inputs = np.array([long, lat, lat*long,  median_age, total_rooms, median_income])
 
         normalized_inputs, std, mean = z_score_normalization(inputs)
 
