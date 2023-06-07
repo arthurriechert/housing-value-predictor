@@ -41,7 +41,7 @@ def compute_model(W, X, b):
     return predictions
 
 
-def compute_cost(W, X, b, Y):
+def compute_cost(W, X, b, Y, lambda_):
     """
     Compute cost using Mean Squared Error
 
@@ -50,6 +50,7 @@ def compute_cost(W, X, b, Y):
         X (ndarray): Array of training examples, shape(m, n), where m is number of training examples & n is number of features
         b (float): Scalar bias
         Y (ndarray): Array of results for training examples, shape(,m), where m is number of training examples
+        lambda_ (float): Regularization parameter
 
     Returns:
         cost (float): Scalar MSE
@@ -62,14 +63,14 @@ def compute_cost(W, X, b, Y):
     # Get training examples
     m = X.shape[0]
 
-    # Compute MSE vectorized
-    cost = 1/(2*m) * np.sum(np.square(predictions - Y))
+    # Compute MSE vectorized and regularized
+    cost = 1/(2*m) * np.sum(np.square(predictions - Y)) + (lambda_ / (2 * m)) * np.sum(np.square(W)) 
 
     return cost
 
 
 # Find a way to vectorize gradient computation
-def compute_gradient(W, X, b, Y):
+def compute_gradient(W, X, b, Y, lambda_):
     """
     Use pre-calculated partial derivatives to determine the derivatives of the MSE
 
@@ -78,12 +79,13 @@ def compute_gradient(W, X, b, Y):
         X (ndarray): Array of training examples, shape(m, n), where m is number of training examples & n is number of features
         b (float): Scalar bias
         Y (ndarray): Array of results for training examples, shape(,m), where m is number of training examples
-    
+        lambda_ (float): Regularization parameter
+
     Returns:
         grad_W (ndarray): Array partial derivatives, shape (,n), where is number of features
         grad_b (float): Scalar partial derivative for bias
-
-    """
+           
+        """
 
     # m: training examples, n: features
     m, n = X.shape
@@ -106,6 +108,9 @@ def compute_gradient(W, X, b, Y):
         for j in range(n):
             grad_W[j] += loss * X[i, j]
 
+    # Apply regularization
+    grad_W += lambda_ / m * W
+
     # Get the averages at once
     grad_W /= m
     grad_b /= m 
@@ -114,7 +119,7 @@ def compute_gradient(W, X, b, Y):
     return grad_W, grad_b
     
 
-def gradient_descent(W, X, b, Y, iters, alpha):
+def gradient_descent(W, X, b, Y, iters, alpha, lambda_):
     """
     Perform standard gradient descent
 
@@ -125,6 +130,7 @@ def gradient_descent(W, X, b, Y, iters, alpha):
         Y (ndarray): Array of results for training examples, shape(,m), where m is number of training examples
         iters: (int): Number of times to perform single round of gradient descent
         alpha: (float): Learning rate (usually less than 1)
+        lambda_ (float): Regularization parameter    
 
     Returns:
         W (ndarray): Updated array of weights after gradient descent, shape(,n), where n is number of features
@@ -140,10 +146,10 @@ def gradient_descent(W, X, b, Y, iters, alpha):
     for i in range(iters):
 
         # Get gradients
-        dW, db = compute_gradient(W, X, b, Y)
+        dW, db = compute_gradient(W, X, b, Y, lambda_)
 
         # Get costs to track progress
-        cost = compute_cost(W, X, b, Y)
+        cost = compute_cost(W, X, b, Y, lambda_)
 
         # Apply gradients
         W = W - alpha * dW
@@ -267,7 +273,7 @@ def test_model():
     test_predictions = compute_model(W_test, X_train[:m_test, :], b_test)
 
     # Compute test gradients
-    dW, db = compute_gradient(W_test, X_train, b_test, Y_train)
+    dW, db = compute_gradient(W_test, X_train, b_test, Y_train, 1.0)
 
     # Print diagnostics
     print(f"""
@@ -301,12 +307,13 @@ def test_model():
             epochs = int(input("How many epochs? "))
             alpha = float(input("What's alpha? "))
             should_norm = input("Use normalized or unnormalized data(yes or no)? ")
+            lambda_ = float(input("What's lambda? "))
 
             # Determine use of normalized or unnormalized data
             if should_norm == "yes":
-                W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, epochs, alpha)    
+                W_final, b_final = gradient_descent(W_test, X_train, b_test, Y_train, epochs, alpha, lambda_)    
             elif should_norm == "no":
-                W_final, b_final = gradient_descent(W_test, X_unorm, b_test, Y_unorm, epochs, alpha)    
+                W_final, b_final = gradient_descent(W_test, X_unorm, b_test, Y_unorm, epochs, alpha, lambda_)    
  
             # Stop loop
             running = False
@@ -323,7 +330,7 @@ def test_model():
             continue
 
     # Compute cost against evaluation data
-    final_cost = compute_cost(W_final, X_eval, b_final, Y_eval)
+    final_cost = compute_cost(W_final, X_eval, b_final, Y_eval, 1.0)
 
     # Display final W (ndarray) and b (float)
     print(f'\033[32mOptimized at {W_final, b_final}\033[0m\nCOST AGAINST EVALUATION DATA:{final_cost}')
@@ -358,7 +365,7 @@ def test_model():
         normalized_inputs, std, mean = z_score_normalization(inputs)
 
         # Get novel predictions
-        prediction = compute_model(W_final, inputs, b_final)
+        prediction = compute_model(W_final, inputs, b_final, 1.0)
 
         # Convert it to a realistic house price
         final_prediction = reverse_normalization(prediction, mean, std)
